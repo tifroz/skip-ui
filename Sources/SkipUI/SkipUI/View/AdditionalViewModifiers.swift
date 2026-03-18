@@ -63,9 +63,6 @@ extension View {
         return ModifiedContent(content: self, modifier: RenderModifier { renderable, context in
             var context = context
             context.modifier = context.modifier.skipHitTesting(enabled: enabled)
-            if !enabled {
-                print("SkipUI-HitTesting allowsHitTesting(false) applied to \(type(of: renderable))")
-            }
             EnvironmentValues.shared.setValues {
                 $0.set_isHitTestingEnabled(enabled)
                 return ComposeResult.ok

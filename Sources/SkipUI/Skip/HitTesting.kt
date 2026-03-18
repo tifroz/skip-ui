@@ -42,11 +42,11 @@ private class SkipHitTestingNode : Modifier.Node(), PointerInputModifierNode {
     override fun onPointerEvent(pointerEvent: PointerEvent, pass: PointerEventPass, bounds: IntSize) {
         // Intentionally do nothing. Gesture handlers are disabled in SkipUI when
         // allowsHitTesting(false) is active.
-        android.util.Log.d("SkipUI-HitTesting", "skipHitTesting onPointerEvent pass=$pass pointers=${pointerEvent.changes.size}")
+        //android.util.Log.d("SkipUI-HitTesting", "skipHitTesting onPointerEvent pass=$pass pointers=${pointerEvent.changes.size}")
     }
 
     override fun onCancelPointerInput() {
-        android.util.Log.d("SkipUI-HitTesting", "skipHitTesting onCancelPointerInput")
+        //android.util.Log.d("SkipUI-HitTesting", "skipHitTesting onCancelPointerInput")
     }
 
     override fun sharePointerInputWithSiblings(): Boolean {

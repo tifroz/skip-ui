@@ -30,6 +30,7 @@ class ContextMenuModifier: RenderModifier {
     let nestedMenu = remember { mutableStateOf<Menu?>(nil) }
     let coroutineScope = rememberCoroutineScope()
     let contentContext = context.content()
+    let isContextMenuEnabled = EnvironmentValues.shared.isEnabled && EnvironmentValues.shared._isHitTestingEnabled
     let replaceMenu: (Menu?) -> Void = { menu in
         coroutineScope.launch {
             delay(200)
@@ -43,10 +44,16 @@ class ContextMenuModifier: RenderModifier {
         }
     }
     ComposeContainer(eraseAxis: true, modifier: context.modifier) { modifier in
-        Box(modifier: modifier.combinedClickable(
-            onLongClick: { isMenuExpanded.value = true },
-            onClick: {}
-        )) {
+        let interactionModifier: Modifier
+        if isContextMenuEnabled {
+            interactionModifier = modifier.combinedClickable(
+                onLongClick: { isMenuExpanded.value = true },
+                onClick: {}
+            )
+        } else {
+            interactionModifier = modifier
+        }
+        Box(modifier: interactionModifier) {
             content.Render(context: contentContext)
             DropdownMenu(expanded: isMenuExpanded.value, onDismissRequest: {
                 isMenuExpanded.value = false

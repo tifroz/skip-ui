@@ -209,9 +209,6 @@ public struct Button : View, Renderable {
     ///   - action: Pass nil if the given modifier already includes `clickable`
     @Composable static func RenderTextButton(label: View, context: ComposeContext, role: ButtonRole? = nil, isPlain: Bool = false, isEnabled: Bool = EnvironmentValues.shared.isEnabled, action: (() -> Void)? = nil) {
         let isHitTestingEnabled = EnvironmentValues.shared._isHitTestingEnabled
-        if !isHitTestingEnabled {
-            print("SkipUI-HitTesting RenderTextButton hit testing disabled")
-        }
         var foregroundStyle: ShapeStyle
         if role == .destructive {
             foregroundStyle = Color(colorImpl: { MaterialTheme.colorScheme.error })
