@@ -49,11 +49,17 @@ class SheetTestActivity : ComponentActivity()
 
 /** Library-only coverage: no app code or measured-content sizing participates in these tests. */
 @org.junit.runner.RunWith(androidx.test.ext.junit.runners.AndroidJUnit4::class)
+@OptIn(androidx.compose.ui.test.ExperimentalTestApi::class)
 class SheetPresentationTests {
-    @get:Rule val rule = createAndroidComposeRule<SheetTestActivity>()
+    private val motionScale = object : androidx.compose.ui.MotionDurationScale {
+        var multiplier = 1f
+        override val scaleFactor: Float get() = multiplier
+    }
+    @get:Rule val rule = createAndroidComposeRule<SheetTestActivity>(effectContext = motionScale)
     private val presented = mutableStateOf(true)
     private val detent = mutableStateOf(PresentationDetent.height(260.0))
     private var headerBounds = Rect.Zero
+    private var headerTop = 0f
     private var contentBounds = Rect.Zero
     private var backgroundColor: Color? = null
     private val colorScheme = mutableStateOf<ColorScheme?>(null)
@@ -150,7 +156,10 @@ class SheetPresentationTests {
                 .onGloballyPositioned { contentBounds = it.boundsInWindow() }
                 .drawWithContent { draws.incrementAndGet(); drawContent() }) {
                 Box(Modifier.fillMaxWidth().height(64.dp).background(ComposeColor.Green)
-                    .onGloballyPositioned { headerBounds = it.boundsInWindow() }
+                    .onGloballyPositioned {
+                        headerBounds = it.boundsInWindow()
+                        headerTop = it.localToWindow(androidx.compose.ui.geometry.Offset.Zero).y
+                    }
                     .testTag("header").clickable { clicks.incrementAndGet() }) {
                     Text("HEADER MUST STAY VISIBLE", color = ComposeColor.Black,
                         modifier = Modifier.padding(start = 48.dp, top = 20.dp))
@@ -205,6 +214,48 @@ class SheetPresentationTests {
         rule.runOnIdle { presented.value = false }
         rule.mainClock.autoAdvance = true
         rule.waitForIdle()
+        assertEquals(1, dismissals.get())
+    }
+
+    /** The outgoing sheet must traverse intermediate positions before completing dismissal. */
+    @Test fun programmaticDismissalKeepsVisibleTravelAndCompletesOnce() {
+        detent.value = PresentationDetent.large
+        install()
+        val initial = headerTop
+        val travel = contentBounds.height
+        rule.mainClock.autoAdvance = false
+        rule.runOnUiThread { presented.value = false }
+        rule.mainClock.advanceTimeByFrame()
+        rule.mainClock.advanceTimeBy(96)
+        rule.waitForIdle()
+        val progress = (headerTop - initial) / travel
+        assertTrue("Dismissal should have started: progress=$progress", progress > 0.05f)
+        assertTrue("Sheet should still be visibly sliding at 100 ms: progress=$progress", progress < 0.85f)
+        assertEquals("onDismiss must wait for the slide", 0, dismissals.get())
+        assertHeaderVisible("dismissal-intermediate")
+
+        rule.mainClock.autoAdvance = true
+        rule.waitForIdle()
+        rule.onNodeWithTag("header").assertDoesNotExist()
+        assertEquals(1, dismissals.get())
+        rule.runOnIdle { presented.value = true }
+        rule.waitForIdle()
+        assertHeaderVisible("dismissal-reopened")
+        assertEquals(1, dismissals.get())
+    }
+
+    @Test fun programmaticDismissalRespectsDisabledSystemAnimations() {
+        install()
+        rule.mainClock.autoAdvance = false
+        rule.runOnUiThread {
+            motionScale.multiplier = 0f
+            presented.value = false
+        }
+        repeat(4) {
+            rule.mainClock.advanceTimeByFrame()
+            rule.waitForIdle()
+        }
+        rule.onNodeWithTag("header").assertDoesNotExist()
         assertEquals(1, dismissals.get())
     }
 

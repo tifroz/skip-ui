@@ -254,7 +254,7 @@ private let AlertDialogMaxWidth: Dp = 560.dp
     } else {
         LaunchedEffect(true) {
             if sheetState.targetValue != SheetValue.Hidden {
-                sheetState.hide()
+                hideSheetWithTransition(sheetState)
             }
             if wasPresented.value {
                 wasPresented.value = false
