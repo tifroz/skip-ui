@@ -3753,4 +3753,8 @@ Infer ranges from `range(of:)` or `runs`. Lite does not implement generic attrib
 scopes or explicit `Range<AttributedString.Index>` slicing. See SkipFoundation's
 editable attributed strings documentation for the supported subset. This change
 requires the companion SkipFoundation implementation before a release dependency
-can be selected; local validation uses SwiftPM editable dependencies.
+can be selected. The `tifroz/showcase-preview` branch pins the implementation from
+[SkipFoundation PR #143](https://github.com/skiptools/skip-foundation/pull/143) to
+commit `53226ca6e8204a8ea5cf6bfb3838818cfef8cc33`, so a clean checkout can resolve
+the required API without local overrides. Replace the fork pin with an upstream
+release requirement before submitting this preview branch upstream.

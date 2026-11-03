@@ -10,9 +10,11 @@ let package = Package(
     dependencies: [ 
         .package(url: "https://github.com/skiptools/skip.git", from: "1.9.6"),
         .package(url: "https://github.com/skiptools/skip-model.git", from: "1.7.7"),
+        // Preview only: SkipFoundation PR #143. Replace with an upstream release before submitting.
+        .package(url: "https://github.com/tifroz/skip-foundation.git", revision: "53226ca6e8204a8ea5cf6bfb3838818cfef8cc33"),
     ],
     targets: [
-        .target(name: "SkipUI", dependencies: [.product(name: "SkipModel", package: "skip-model")], plugins: [.plugin(name: "skipstone", package: "skip")]),
+        .target(name: "SkipUI", dependencies: [.product(name: "SkipModel", package: "skip-model"), .product(name: "SkipFoundation", package: "skip-foundation")], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .testTarget(name: "SkipUITests", dependencies: ["SkipUI", .product(name: "SkipTest", package: "skip")], resources: [.process("Resources")], plugins: [.plugin(name: "skipstone", package: "skip")]),
     ]
 )
